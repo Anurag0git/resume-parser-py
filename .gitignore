@@ -24,3 +24,6 @@ uploads/
 
 # wkhtmltopdf installer if any
 wkhtmltopdf.exe
+
+
+.env

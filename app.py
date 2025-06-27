@@ -8,6 +8,8 @@ import json
 import re
 import zipfile
 from datetime import datetime
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -16,7 +18,11 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size for ba
 # Replace this path with where wkhtmltopdf is installed on your system
 PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
 
-API_KEY = "AIzaSyBnTIV206lefAQ9UZ5h2svdDOwRjg0S14s"
+load_dotenv()
+
+API_KEY = os.environ.get("GEMINI_API_KEY")
+
+print("Loaded API KEY:", API_KEY)
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
