@@ -15,6 +15,6 @@ This is a lightweight resume parser that:
 ## 🚀 Setup Instructions
 
 ```bash
-git clone https://github.com/your-username/resume-parser-py.git
+git clone https://github.com/Anurag0git/resume-parser-py.git
 cd resume-parser-py
 pip install -r requirements.txt
