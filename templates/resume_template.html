@@ -1,38 +1,150 @@
-<h2>Name: {{ data.name }}</h2>
-<p><strong>Email:</strong> {{ data.email }}</p>
-<p><strong>LinkedIn:</strong> {{ data.linkedin }}</p>
-<p><strong>GitHub:</strong> {{ data.github }}</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ data.name }} - Resume</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Calibri', 'Arial', sans-serif; line-height: 1.4; color: #333; font-size: 11px; }
+        .resume { max-width: 800px; margin: 0 auto; padding: 20px; background: white; }
+        .header { text-align: center; border-bottom: 2px solid #2c3e50; padding-bottom: 15px; margin-bottom: 20px; }
+        .name { font-size: 24px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
+        .contact { font-size: 10px; color: #555; }
+        .contact a { color: #2c3e50; text-decoration: none; }
+        .section { margin-bottom: 15px; }
+        .section-title { font-size: 14px; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #bdc3c7; padding-bottom: 3px; margin-bottom: 8px; text-transform: uppercase; }
+        .item { margin-bottom: 8px; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; }
+        .item-title { font-weight: bold; color: #2c3e50; font-size: 11px; }
+        .item-company { color: #34495e; font-size: 10px; }
+        .item-date { color: #7f8c8d; font-size: 9px; white-space: nowrap; }
+        .item-description { color: #555; font-size: 10px; line-height: 1.3; }
+        .skills { display: flex; flex-wrap: wrap; gap: 5px; }
+        .skill { background: #ecf0f1; color: #2c3e50; padding: 2px 6px; border-radius: 3px; font-size: 9px; }
+        .achievements { list-style: none; }
+        .achievements li { position: relative; margin-bottom: 3px; padding-left: 10px; color: #555; font-size: 10px; }
+        .achievements li::before { content: "•"; color: #2c3e50; position: absolute; left: 0; }
+        .education-item { margin-bottom: 6px; }
+        .project-item { margin-bottom: 6px; }
+        .project-tech { color: #7f8c8d; font-size: 9px; font-style: italic; }
+        @media print {
+            body { font-size: 10px; }
+            .resume { padding: 15px; }
+            .name { font-size: 20px; }
+            .section-title { font-size: 12px; }
+        }
+        @page { margin: 0.5in; }
+    </style>
+</head>
+<body>
+    <div class="resume">
+        <!-- Header -->
+        <div class="header">
+            <div class="name">{{ data.name or "Your Name" }}</div>
+            <div class="contact">
+                {% if data.email %}{{ data.email }} | {% endif %}
+                {% if data.linkedin %}<a href="{{ data.linkedin }}">LinkedIn</a> | {% endif %}
+                {% if data.github %}<a href="{{ data.github }}">GitHub</a>{% endif %}
+            </div>
+        </div>
 
-<h3>Education</h3>
-<ul>
-  {% for edu in data.education %}
-    <li>{{ edu.degree }} in {{ edu.major }} from {{ edu.collegeName }} ({{ edu.startDate }} - {{ edu.endDate }}) | CGPA: {{ edu.cgpa }}</li>
-  {% endfor %}
-</ul>
+        <!-- Education -->
+        {% if data.education %}
+        <div class="section">
+            <div class="section-title">Education</div>
+            {% for edu in data.education %}
+            <div class="education-item">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">{{ edu.degree or "Degree" }} in {{ edu.major or "Major" }}</div>
+                        <div class="item-company">{{ edu.collegeName or "Institution" }}</div>
+                    </div>
+                    <div class="item-date">
+                        {% if edu.startDate and edu.endDate %}{{ edu.startDate }} - {{ edu.endDate }}{% elif edu.startDate %}{{ edu.startDate }} - Present{% endif %}
+                        {% if edu.cgpa %} | CGPA: {{ edu.cgpa }}{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-<h3>Experience</h3>
-<ul>
-  {% for job in data.workExperience %}
-    <li>{{ job.title }} at {{ job.company }} ({{ job.startDate }} - {{ job.endDate }}) - {{ job.description }}</li>
-  {% endfor %}
-</ul>
+        <!-- Experience -->
+        {% if data.workExperience %}
+        <div class="section">
+            <div class="section-title">Professional Experience</div>
+            {% for job in data.workExperience %}
+            <div class="item">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">{{ job.title or "Job Title" }}</div>
+                        <div class="item-company">{{ job.company or "Company" }}{% if job.location %} | {{ job.location }}{% endif %}</div>
+                    </div>
+                    <div class="item-date">
+                        {% if job.startDate and job.endDate %}{{ job.startDate }} - {{ job.endDate }}{% elif job.startDate %}{{ job.startDate }} - Present{% endif %}
+                    </div>
+                </div>
+                {% if job.description %}
+                <div class="item-description">{{ job.description }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-<h3>Projects</h3>
-<ul>
-  {% for project in data.projects %}
-    <li><strong>{{ project.name }}</strong>: {{ project.description }} | Tech: {{ project.technologies }} | <a href="{{ project.link }}">Link</a></li>
-  {% endfor %}
-</ul>
+        <!-- Projects -->
+        {% if data.projects %}
+        <div class="section">
+            <div class="section-title">Projects</div>
+            {% for project in data.projects %}
+            <div class="project-item">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">{{ project.name or "Project Name" }}</div>
+                        {% if project.technologies %}
+                        <div class="project-tech">{{ project.technologies }}</div>
+                        {% endif %}
+                    </div>
+                    {% if project.link %}
+                    <div class="item-date"><a href="{{ project.link }}" style="color: #2c3e50;">View Project</a></div>
+                    {% endif %}
+                </div>
+                {% if project.description %}
+                <div class="item-description">{{ project.description }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-<h3>Skills</h3>
-<p>{{ data.skills | join(", ") }}</p>
+        <!-- Skills -->
+        {% if data.skills %}
+        <div class="section">
+            <div class="section-title">Technical Skills</div>
+            <div class="skills">
+                {% for skill in data.skills %}<span class="skill">{{ skill }}</span>{% endfor %}
+            </div>
+        </div>
+        {% endif %}
 
-<h3>Achievements</h3>
-<ul>
-  {% for ach in data.achievements %}
-    <li>{{ ach }}</li>
-  {% endfor %}
-</ul>
+        <!-- Achievements -->
+        {% if data.achievements %}
+        <div class="section">
+            <div class="section-title">Achievements</div>
+            <ul class="achievements">
+                {% for achievement in data.achievements %}<li>{{ achievement }}</li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
 
-<h3>Other Info</h3>
-<p>{{ data.otherInfo }}</p>
+        <!-- Additional Info -->
+        {% if data.otherInfo %}
+        <div class="section">
+            <div class="section-title">Additional Information</div>
+            <div class="item-description">{{ data.otherInfo }}</div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

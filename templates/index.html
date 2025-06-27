@@ -2,30 +2,216 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Resume Parser</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Resume Formatter | Get Corporate-Ready Resumes in One Click</title>
+  <meta name="description" content="Easily convert your resume into a clean, structured corporate format. Generate PDF resumes ready for ATS and professional review — no design skills required.">
+  <meta name="keywords" content="resume formatter, structured resume, resume to PDF, resume parser, ATS resume, corporate resume builder">
+  <meta name="author" content="Resume Formatter Team">
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="Resume Formatter | Corporate Resume in Seconds" />
+  <meta property="og:description" content="Upload your resume and download a structured, clean PDF resume — tailored for recruiters and HR systems." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://yourdomain.com" />
+  <meta property="og:image" content="https://yourdomain.com/assets/preview-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="canonical" href="https://yourdomain.com/" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+  
+  <style>
+    :root {
+      --primary-color: #000000;
+      --secondary-color: #6c757d;
+      --accent-color: #f8f9fa;
+      --danger-color: #dc3545;
+      --border-color: #dee2e6;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fdfdfd;
+      color: #212529;
+    }
+
+    .main-container {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      padding: 2rem;
+      margin-top: 2rem;
+    }
+
+    .header h1 {
+      font-weight: 600;
+      font-size: 2rem;
+      color: var(--primary-color);
+    }
+
+    .header p {
+      color: var(--secondary-color);
+      font-size: 1rem;
+    }
+
+    .upload-section {
+      border: 2px dashed var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+      background-color: var(--accent-color);
+    }
+
+    .upload-icon {
+      font-size: 2rem;
+      color: var(--primary-color);
+    }
+
+    .custom-file-input {
+      position: relative;
+      display: inline-block;
+      background: white;
+      border: 1px solid var(--border-color);
+      padding: 1rem;
+      text-align: center;
+      width: 100%;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+
+    .custom-file-input:hover {
+      background-color: #f1f1f1;
+    }
+
+    .custom-file-input input[type="file"] {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      border: none;
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-weight: 500;
+    }
+
+    .btn-primary:hover {
+      background-color: #333333;
+    }
+
+    .alert-danger {
+      background-color: #f8d7da;
+      color: var(--danger-color);
+      border-left: 4px solid var(--danger-color);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 4px solid #e9ecef;
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--secondary-color);
+      font-size: 0.9rem;
+      margin-top: 2rem;
+    }
+  </style>
 </head>
-<body class="bg-light">
-  <div class="container py-5">
-    <h1 class="text-center mb-4">Resume Parser (Python Version)</h1>
-
-    {% if error %}
-      <div class="alert alert-danger">{{ error }}</div>
-    {% endif %}
-
-    <form method="post" enctype="multipart/form-data" class="mb-4">
-      <div class="mb-3">
-        <label for="resume" class="form-label">Upload your resume PDF:</label>
-        <input type="file" class="form-control" name="resume" required accept=".pdf"/>
+<body>
+  <div class="container">
+    <div class="main-container">
+      <div class="header text-center mb-4">
+        <h1><i class="fas fa-file-alt me-2"></i>Resume Formatter</h1>
+        <p class="text-muted">Get your resume structured, styled, and corporate-ready in seconds.</p>
+        
+        
       </div>
-      <button type="submit" class="btn btn-primary w-100">Extract Resume Data</button>
-    </form>
 
-    {% if structured_data %}
-      <h2 class="mt-5">Extracted Data:</h2>
-      <pre class="bg-white p-3 border rounded">{{ structured_data }}</pre>
-    {% endif %}
+      {% if error %}
+        <div class="alert-danger">
+          <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+        </div>
+      {% endif %}
+
+      {% if download_ready %}
+        <div class="alert alert-success d-flex justify-content-between align-items-center mt-4">
+          <div><i class="fas fa-check-circle me-2"></i>Resume formatted successfully.</div>
+          <a href="/download" class="btn btn-outline-success btn-sm"><i class="fas fa-download me-2"></i>Download</a>
+        </div>
+      {% endif %}
+
+      <div class="upload-section mt-4">
+        <div class="upload-icon text-center mb-3"><i class="fas fa-upload"></i></div>
+        <h5 class="text-center mb-3">Upload Resume (PDF)</h5>
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+          <label for="fileInput" class="custom-file-input">
+            <i class="fas fa-file-pdf me-2"></i><span id="fileLabel">Choose PDF file</span>
+            <input type="file" name="resume" required accept=".pdf" id="fileInput" />
+          </label>
+          <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+            <i class="fas fa-play me-2"></i>Format Resume
+          </button>
+        </form>
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>Processing...</p>
+        </div>
+      </div>
+
+      <div class="footer mt-5">
+        &copy; 2025 Resume Formatter
+      </div>
+    </div>
   </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const fileLabel = document.getElementById('fileLabel');
+    const submitBtn = document.getElementById('submitBtn');
+    const loading = document.getElementById('loading');
+    const form = document.getElementById('uploadForm');
+
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      fileLabel.textContent = file ? file.name : 'Choose PDF file';
+      fileLabel.style.color = file ? '#000000' : '#6c757d';
+    });
+
+    form.addEventListener('submit', function(e) {
+      if (!fileInput.files.length) {
+        e.preventDefault();
+        alert("Please select a PDF file.");
+        return;
+      }
+      submitBtn.style.display = 'none';
+      loading.style.display = 'block';
+    });
+  </script>
 </body>
 </html>
