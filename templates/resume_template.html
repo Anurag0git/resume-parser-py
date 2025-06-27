@@ -1,0 +1,38 @@
+<h2>Name: {{ data.name }}</h2>
+<p><strong>Email:</strong> {{ data.email }}</p>
+<p><strong>LinkedIn:</strong> {{ data.linkedin }}</p>
+<p><strong>GitHub:</strong> {{ data.github }}</p>
+
+<h3>Education</h3>
+<ul>
+  {% for edu in data.education %}
+    <li>{{ edu.degree }} in {{ edu.major }} from {{ edu.collegeName }} ({{ edu.startDate }} - {{ edu.endDate }}) | CGPA: {{ edu.cgpa }}</li>
+  {% endfor %}
+</ul>
+
+<h3>Experience</h3>
+<ul>
+  {% for job in data.workExperience %}
+    <li>{{ job.title }} at {{ job.company }} ({{ job.startDate }} - {{ job.endDate }}) - {{ job.description }}</li>
+  {% endfor %}
+</ul>
+
+<h3>Projects</h3>
+<ul>
+  {% for project in data.projects %}
+    <li><strong>{{ project.name }}</strong>: {{ project.description }} | Tech: {{ project.technologies }} | <a href="{{ project.link }}">Link</a></li>
+  {% endfor %}
+</ul>
+
+<h3>Skills</h3>
+<p>{{ data.skills | join(", ") }}</p>
+
+<h3>Achievements</h3>
+<ul>
+  {% for ach in data.achievements %}
+    <li>{{ ach }}</li>
+  {% endfor %}
+</ul>
+
+<h3>Other Info</h3>
+<p>{{ data.otherInfo }}</p>

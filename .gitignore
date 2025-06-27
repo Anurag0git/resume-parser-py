@@ -1,0 +1,26 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.log
+
+# VS Code / JetBrains
+.vscode/
+.idea/
+
+# Virtualenv
+env/
+venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PDF, DOCX generated
+*.pdf
+*.docx
+
+# Resume uploads
+uploads/
+
+# wkhtmltopdf installer if any
+wkhtmltopdf.exe
