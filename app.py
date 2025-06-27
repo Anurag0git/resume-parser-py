@@ -6,10 +6,12 @@ import pdfkit
 from io import BytesIO
 import json
 import re
+import zipfile
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size for batch processing
 
 # Replace this path with where wkhtmltopdf is installed on your system
 PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
@@ -47,118 +49,144 @@ def clean_response_for_json(raw):
     
     return raw
 
+def process_single_resume(filepath):
+    """Process a single resume and return the formatted PDF"""
+    try:
+        # Extract text from PDF
+        resume_text = extract_text_from_pdf(filepath)
+        if not resume_text.strip():
+            return None, "Could not extract text from the PDF. Please ensure it's not password protected or corrupted."
+
+        # Send to AI API
+        prompt = f"""
+        Extract the following information from the resume text provided below.
+        Structure the output as a JSON object with this schema:
+        {{
+            "name": "Full Name",
+            "email": "Email Address",
+            "linkedin": "LinkedIn Profile URL",
+            "github": "GitHub Profile URL",
+            "education": [{{"degree": "", "major": "", "collegeName": "", "cgpa": "", "startDate": "", "endDate": ""}}],
+            "workExperience": [{{"title": "", "company": "", "location": "", "startDate": "", "endDate": "", "description": ""}}],
+            "projects": [{{"name": "", "description": "", "technologies": "", "link": ""}}],
+            "skills": [],
+            "achievements": [],
+            "otherInfo": ""
+        }}
+        Resume Text:
+        \"\"\"{resume_text}\"\"\"
+        """
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {"responseMimeType": "application/json"}
+        }
+
+        res = requests.post(url, json=payload)
+        
+        if res.status_code != 200:
+            return None, f"API Error: {res.status_code} - {res.text}"
+        
+        result_text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
+        cleaned = clean_response_for_json(result_text)
+
+        try:
+            structured_data = json.loads(cleaned)
+        except json.JSONDecodeError as e:
+            return None, f"JSON parsing error: {e.msg} at line {e.lineno}, column {e.colno}"
+
+        # Generate PDF
+        rendered_html = render_template("resume_template.html", data=structured_data)
+        pdf_bytes = pdfkit.from_string(rendered_html, False, configuration=PDFKIT_CONFIG)  # type: ignore
+        
+        return pdf_bytes, None
+        
+    except Exception as e:
+        return None, f"Error processing resume: {str(e)}"
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         print("POST request received")
         try:
-            # Check if file was uploaded
+            # Check if files were uploaded
             if 'resume' not in request.files:
                 print("No 'resume' field in request.files")
-                return render_template('index.html', error="No file was uploaded.")
+                return render_template('index.html', error="No files were uploaded.")
             
-            file = request.files['resume']
-            print(f"File received: {file.filename}")
+            files = request.files.getlist('resume')
+            batch_mode = request.form.get('batch_mode') == 'on'
             
-            # Check if file is empty
-            if file.filename == '':
-                print("Empty filename")
-                return render_template('index.html', error="No file was selected.")
+            if not files or all(file.filename == '' for file in files):
+                print("No files selected")
+                return render_template('index.html', error="No files were selected.")
             
-            # Check if file is a PDF
-            if not file.filename or not file.filename.lower().endswith('.pdf'):
-                print(f"Invalid file type: {file.filename}")
-                return render_template('index.html', error="Please upload a valid PDF file.")
+            # Filter PDF files
+            pdf_files = [file for file in files if file.filename and file.filename.lower().endswith('.pdf')]
+            if not pdf_files:
+                return render_template('index.html', error="Please upload valid PDF files.")
             
-            # Save the file
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)  # type: ignore
-            print(f"Saving file to: {filepath}")
-            file.save(filepath)
+            print(f"Processing {len(pdf_files)} PDF files")
             
-            # Check if file was saved successfully
-            if not os.path.exists(filepath):
-                print("File was not saved successfully")
-                return render_template('index.html', error="Failed to save the uploaded file.")
-            
-            print("File saved successfully, extracting text...")
-            
-            # Extract text from PDF
-            try:
-                resume_text = extract_text_from_pdf(filepath)
-                if not resume_text.strip():
-                    print("No text extracted from PDF")
-                    return render_template('index.html', error="Could not extract text from the PDF. Please ensure it's not password protected or corrupted.")
-                print(f"Extracted {len(resume_text)} characters from PDF")
-            except Exception as e:
-                print(f"Error reading PDF: {str(e)}")
-                return render_template('index.html', error=f"Error reading PDF: {str(e)}")
-
-            print("Sending to AI API...")
-            prompt = f"""
-            Extract the following information from the resume text provided below.
-            Structure the output as a JSON object with this schema:
-            {{
-                "name": "Full Name",
-                "email": "Email Address",
-                "linkedin": "LinkedIn Profile URL",
-                "github": "GitHub Profile URL",
-                "education": [{{"degree": "", "major": "", "collegeName": "", "cgpa": "", "startDate": "", "endDate": ""}}],
-                "workExperience": [{{"title": "", "company": "", "location": "", "startDate": "", "endDate": "", "description": ""}}],
-                "projects": [{{"name": "", "description": "", "technologies": "", "link": ""}}],
-                "skills": [],
-                "achievements": [],
-                "otherInfo": ""
-            }}
-            Resume Text:
-            \"\"\"{resume_text}\"\"\"
-            """
-
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
-
-            payload = {
-                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                "generationConfig": {"responseMimeType": "application/json"}
-            }
-
-            res = requests.post(url, json=payload)
-            
-            if res.status_code != 200:
-                print(f"API Error: {res.status_code} - {res.text}")
-                return render_template('index.html', error=f"API Error: {res.status_code} - {res.text}")
-            
-            print("AI response received, processing...")
-            result_text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
-            print(f"Raw AI response length: {len(result_text)}")
-            
-            cleaned = clean_response_for_json(result_text)
-            print(f"Cleaned response length: {len(cleaned)}")
-
-            try:
-                structured_data = json.loads(cleaned)
-                print("JSON parsed successfully")
-            except json.JSONDecodeError as e:
-                print(f"JSON parsing error: {e}")
-                print(f"Error at line {e.lineno}, column {e.colno}")
-                print(f"Character position: {e.pos}")
+            # Single file processing
+            if len(pdf_files) == 1 or not batch_mode:
+                file = pdf_files[0]
+                if not file.filename:
+                    return render_template('index.html', error="Invalid filename.")
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+                file.save(filepath)
                 
-                # Save both raw and cleaned responses for debugging
-                with open("bad_response_raw.json", "w", encoding="utf-8") as f:
-                    f.write(result_text)
-                with open("bad_response_cleaned.json", "w", encoding="utf-8") as f:
-                    f.write(cleaned)
+                pdf_bytes, error = process_single_resume(filepath)
+                if error:
+                    return render_template('index.html', error=error)
                 
-                # Try to show the problematic area
-                start = max(0, e.pos - 50)
-                end = min(len(cleaned), e.pos + 50)
-                print(f"Problematic area: {cleaned[start:end]}")
+                return send_file(BytesIO(pdf_bytes), download_name="Formatted_Resume.pdf", as_attachment=False)  # type: ignore
+            
+            # Batch processing
+            else:
+                print("Starting batch processing...")
+                zip_buffer = BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                    successful_count = 0
+                    failed_count = 0
+                    
+                    for i, file in enumerate(pdf_files):
+                        if not file.filename:
+                            continue
+                        print(f"Processing file {i+1}/{len(pdf_files)}: {file.filename}")
+                        
+                        # Save file temporarily
+                        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+                        file.save(filepath)
+                        
+                        # Process the resume
+                        pdf_bytes, error = process_single_resume(filepath)
+                        
+                        if pdf_bytes:
+                            # Add to zip with a clean filename
+                            clean_name = os.path.splitext(file.filename)[0].replace(' ', '_')
+                            zip_file.writestr(f"{clean_name}_Formatted.pdf", pdf_bytes)  # type: ignore
+                            successful_count += 1
+                        else:
+                            # Add error log to zip
+                            zip_file.writestr(f"{file.filename}_ERROR.txt", f"Failed to process: {error}")  # type: ignore
+                            failed_count += 1
+                        
+                        # Clean up temporary file
+                        try:
+                            os.remove(filepath)
+                        except:
+                            pass
                 
-                return render_template("index.html", error=f"JSON parsing error: {e.msg} at line {e.lineno}, column {e.colno}. Raw response saved to bad_response_raw.json, cleaned response saved to bad_response_cleaned.json")
-
-            print("Generating PDF...")
-            rendered_html = render_template("resume_template.html", data=structured_data)
-            pdf_bytes = pdfkit.from_string(rendered_html, False, configuration=PDFKIT_CONFIG)  # type: ignore
-            print("PDF generated successfully")
-            return send_file(BytesIO(pdf_bytes), download_name="Formatted_Resume.pdf", as_attachment=False)  # type: ignore
+                zip_buffer.seek(0)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                return send_file(
+                    zip_buffer, 
+                    download_name=f"Formatted_Resumes_{timestamp}.zip", 
+                    as_attachment=True,
+                    mimetype='application/zip'
+                )
 
         except Exception as e:
             print(f"Unexpected error: {str(e)}")
