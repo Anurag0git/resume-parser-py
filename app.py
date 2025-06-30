@@ -26,7 +26,6 @@ load_dotenv()
 
 API_KEY = os.environ.get("GEMINI_API_KEY")
 
-print("Loaded API KEY:", API_KEY)
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
