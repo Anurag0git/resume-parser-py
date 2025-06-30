@@ -9,6 +9,7 @@ import re
 import zipfile
 from datetime import datetime
 from dotenv import load_dotenv
+import platform
 
 
 app = Flask(__name__)
@@ -16,7 +17,10 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size for batch processing
 
 # Replace this path with where wkhtmltopdf is installed on your system
-PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+if platform.system() == "Windows":
+    PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+else:
+    PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf='/usr/bin/wkhtmltopdf')
 
 load_dotenv()
 
