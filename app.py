@@ -105,8 +105,15 @@ def process_single_resume(filepath):
             return None, f"JSON parsing error: {e.msg} at line {e.lineno}, column {e.colno}"
 
         # Generate PDF
-        rendered_html = render_template("resume_template.html", data=structured_data)
-        pdf_bytes = pdfkit.from_string(rendered_html, False, configuration=PDFKIT_CONFIG)  # type: ignore
+        abs_img_path = os.path.abspath(os.path.join('templates', 'CV_Sample_files')).replace('\\', '/')
+        print("ABS IMG PATH:", abs_img_path)
+        rendered_html = render_template("resume_template.html", data=structured_data, abs_img_path=abs_img_path)
+        pdf_bytes = pdfkit.from_string(
+            rendered_html, 
+            False, 
+            configuration=PDFKIT_CONFIG, 
+            options={'enable-local-file-access': ''}
+        )
         
         return pdf_bytes, None
         
