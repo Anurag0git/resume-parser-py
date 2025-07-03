@@ -6,7 +6,12 @@
     <title>{{ data.name or 'Full Name' }} - Resume</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Calibri', 'Arial', sans-serif; line-height: 1.4; color: #333; font-size: 12pt; }
+        body, p, span, div, td {
+            font-family: Arial, sans-serif !important;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.4;
+        }
         .resume { max-width: 800px; margin: 0 auto; padding: 20px; background: white; }
         .header { text-align: center; border-bottom: 2px solid #2c3e50; padding-bottom: 15px; margin-bottom: 20px; }
         .name { font-size: 24px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
@@ -154,17 +159,20 @@
 
 <!-- Work Experience -->
 <br>
-<p class=MsoNormal style='text-align:justify;'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image021.png"></span><span style='color:#366091'> 
-<p class=MsoNormal style='text-align:justify;'><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'>WORK EXPERIENCE</span></b></p>
+<p class="MsoNormal" style='text-align:justify;'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image021.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'> WORK EXPERIENCE</span></b></p>
 
-<!-- <p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'>WORK EXPERIENCE</span></b></p> -->
 {% for job in data.workExperience %}
-  <p class=MsoNormal>
-    <b>{{ job.title or 'Job Title' }}</b> at {{ job.company or 'Company' }}{% if job.location %}, {{ job.location }}{% endif %}<br>
-    <span>{{ job.startDate or '' }} - {{ job.endDate or '' }}</span><br>
-    <span>{{ job.description or 'Description of responsibilities and achievements.' }}</span>
-    <br>
-  </p>
+  <div style="margin-bottom: 18px;">
+    <p class="MsoNormal" style='font-size: 16px; margin-bottom: 2px;'>
+      <b>{{ job.title or 'Job Title' }}</b> at {{ job.company or 'Company' }}{% if job.location %}, {{ job.location }}{% endif %}
+    </p>
+    <p class="MsoNormal" style='font-size: 13px; color: #7f8c8d; margin-bottom: 2px;'>
+      {{ job.startDate or '' }}{% if job.startDate and job.endDate %} - {% endif %}{{ job.endDate or '' }}
+    </p>
+    <p class="MsoNormal" style='text-align:justify; font-size: 14px; margin-bottom: 0;'>
+      <span>{{ job.description or 'Description of responsibilities and achievements.' }}</span>
+    </p>
+  </div>
 {% endfor %}
 
 <!-- Projects -->

@@ -228,11 +228,18 @@ def process_single_resume(filepath):
             generated_professional_title=generated_professional_title,
             generated_soft_skills=generated_soft_skills
         )
+        options = {
+            'enable-local-file-access': '',
+            'encoding': 'UTF-8',
+            'disable-smart-shrinking': '',
+            'zoom': '1.0',
+            'minimum-font-size': '12'
+        }
         pdf_bytes = pdfkit.from_string(
             rendered_html, 
             False, 
             configuration=PDFKIT_CONFIG, 
-            options={'enable-local-file-access': ''}
+            options=options
         )
         
         return pdf_bytes, None
