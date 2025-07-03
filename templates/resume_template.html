@@ -6,7 +6,7 @@
     <title>{{ data.name or 'Full Name' }} - Resume</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Calibri', 'Arial', sans-serif; line-height: 1.4; color: #333; font-size: 11px; }
+        body { font-family: 'Calibri', 'Arial', sans-serif; line-height: 1.4; color: #333; font-size: 12pt; }
         .resume { max-width: 800px; margin: 0 auto; padding: 20px; background: white; }
         .header { text-align: center; border-bottom: 2px solid #2c3e50; padding-bottom: 15px; margin-bottom: 20px; }
         .name { font-size: 24px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
@@ -44,9 +44,9 @@
 <table class=6 border=1 cellspacing=0 cellpadding=0 width=732 style='border-collapse:collapse;border:none'>
  <tr>
   <td width=528 colspan=2 style='width:396.0pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
-    <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size:16.0pt;line-height:115%;font-family:"Arial",sans-serif;color:#1F497D'>{{ data.name or 'Full Name' }}</span></b></p>
-    <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size:10.0pt;line-height:115%;font-family:"Cambria",serif;color:#154960'>{{ data.title or 'Professional Title' }}</span></b></p>
-    <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size:10.0pt;line-height:115%;font-family:"Cambria",serif;color:#154960'>&nbsp;</span></b></p>
+    <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size :20px;line-height:115%;font-family:"Arial",sans-serif;color:#1F497D'>{{ data.name or 'Full Name' }}</span></b></p>
+    <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size:16px;line-height:115%;font-family:"Cambria",serif;color:#154960'>{{ data.title or 'Professional Title' }}</span></b></p>
+    <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size:20px;line-height:115%;font-family:"Cambria",serif;color:#154960'>&nbsp;</span></b></p>
     <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size:13.0pt;line-height:115%;font-family:"Cambria",serif;color:#154960'>&nbsp;</span></b></p>
   </td>
   <td width=204 valign=top style='width:153.0pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
@@ -55,10 +55,8 @@
      <tr style='height:27.35pt'>
       <td width=223 valign=top style='width:167.1pt;border:none;padding:0cm 5.4pt 0cm 5.4pt;height:27.35pt'>
         <p class=MsoNormal style='line-height:150%'><span style='color:#1F497D'><img width=19 height=15 src="file:///{{ abs_img_path }}/image001.png"></span></p>
-        <p class=MsoNormal style='line-height:150%'><span style='font-size:9.0pt;line-height:150%;font-family:"Cambria",serif;color:#1F497D'>{{ data.email or 'Email Address' }}</span></p>
-        <p class=MsoNormal style='line-height:150%'><span style='color:#1F497D'><img width=19 height=19 src="file:///{{ abs_img_path }}/image002.png"></span><span style='font-size:10.0pt;line-height:150%;font-family:"Cambria",serif;color:#1F497D'>{{ data.phone or 'Phone Number' }}</span></p>
-        <p class=MsoNormal style='line-height:150%'><span style='color:#1F497D'><img width=19 height=19 src="file:///{{ abs_img_path }}/image003.png"></span><span style='font-size:10.0pt;line-height:150%;font-family:"Cambria",serif;color:#1F497D'>{% if data.linkedin %}<a href="{{ data.linkedin }}">LinkedIn</a>{% else %}LinkedIn URL{% endif %}</span></p>
-        <p class=MsoNormal style='line-height:150%'><span style='color:#1F497D'><img width=19 height=19 src="file:///{{ abs_img_path }}/image004.png"></span><span style='font-size:10.0pt;line-height:150%;font-family:"Cambria",serif;color:#1F497D'>{% if data.github %}<a href="{{ data.github }}">GitHub</a>{% else %}GitHub URL{% endif %}</span></p>
+        <p class=MsoNormal style='line-height:150%'><span style='font-size:12.0pt;line-height:150%;font-family:"Cambria",serif;color:#1F497D'>{{ data.email or 'Email Address' }}</span></p>
+        <p class=MsoNormal style='line-height:150%'><span style='color:#1F497D'><img width=19 height=19 src="file:///{{ abs_img_path }}/image002.png"></span><span style='font-size:12.0pt;line-height:150%;font-family:"Cambria",serif;color:#1F497D'>{{ data.phone or 'Phone Number' }}</span></p>
       </td>
      </tr>
     </table>
@@ -67,56 +65,110 @@
 </table>
 
 <!-- Profile Summary -->
-<p class=MsoNormal style='text-align:justify'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image003.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960'> PROFILE SUMMARY</span></b></p>
+<p class=MsoNormal style='text-align:justify'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image003.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'> PROFILE SUMMARY</span></b></p>
 <p class=MsoNormal style='text-align:justify'><span style='font-size:10.0pt;font-family:"Cambria",serif;color:black'>{{ data.profileSummary or 'Profile summary goes here.' }}</span></p>
-
+<br>
 <!-- Core Competencies / Skills -->
-<p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image004.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960'> CORE COMPETENCIES</span></b></p>
-<ul>
-{% for skill in data.skills %}
-  <li>{{ skill }}</li>
-{% endfor %}
-</ul>
+<p class=MsoNormal style='text-align:justify;'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image004.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'> CORE COMPETENCIES</span></b></p>
+
+<table width="100%" style="border:none; margin-bottom: 10px;">
+  <tr>
+    {% for skill in data.skills or [] %}
+      <td style="vertical-align:middle; padding: 4px 12px 4px 0; border:none; color:#000000; font-size:12pt; font-family:'Cambria',serif;">
+        <img width=16 height=16 style="vertical-align:middle; margin-right:8px;" src="file:///{{ abs_img_path }}/image005.png"> {{ skill }}
+      </td>
+      {% if loop.index % 2 == 0 %}</tr><tr>{% endif %}
+    {% endfor %}
+    {% if data.skills|length % 2 != 0 %}<td></td>{% endif %}
+  </tr>
+</table>
 
 <!-- Soft Skills (if you want to keep the images, otherwise just list) -->
-<p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image010.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960'> SOFT SKILLS</span></b></p>
+<p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image010.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'> SOFT SKILLS</span></b></p>
 <ul>
 {% for soft in data.softSkills or [] %}
   <li>{{ soft }}</li>
 {% endfor %}
 </ul>
 
-<!-- Education -->
-<p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image018.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960'> EDUCATION</span></b></p>
-{% for edu in data.education %}
-  <p class=MsoNormal style='text-align:justify;'>
-    <b>{{ edu.degree or 'Degree' }}</b> in {{ edu.major or 'Major' }}<br>
-    <span>{{ edu.collegeName or 'Institution' }}</span><br>
-    <span>{{ edu.startDate or '' }} - {{ edu.endDate or '' }}</span>
-    {% if edu.cgpa %}<span> | CGPA: {{ edu.cgpa }}</span>{% endif %}
-  </p>
-{% endfor %}
+<table class=6 border=1 cellspacing=0 cellpadding=0 width=732 style='border-collapse:collapse;border:none'>
+  <tr>
+  
+   <td width=204 valign=top style='width:153.0pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
+     <p class=MsoNormal><span style='font-family:"Cambria",serif;color:#366091'>&nbsp;</span></p>
+     <table class=5 border=1 cellspacing=0 cellpadding=0 width=100% style='border-collapse:collapse;border:none'>
+      <tr style='height:27.35pt'>
+        <td width=528 colspan=2 style='width:396.0pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
 
-<!-- Technical Skills Table (optional, or use above skills) -->
-<p class=MsoNormal style='text-align:justify;'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image010.png"></span><span style='color:#366091'> TECHNICAL SKILLS</span></b></p>
-<ul>
-{% for tech in data.technicalSkills or [] %}
-  <li>{{ tech }}</li>
-{% endfor %}
-</ul>
+        <!-- Technical Skills Table (optional, or use above skills) -->
+        <p class=MsoNormal style='text-align:justify;'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image010.png"></span><span style='color:#366091'> 
+        </b><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'>TECHNICAL SKILLS</span></b></p>
+        {% set tech_skills = data.technicalSkills if data.technicalSkills else data.skills %}
+        <table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width=702 style='border-collapse:collapse;border:none'>
+          <tr style='height:18.3pt'>
+            {% for tech in tech_skills or [] %}
+              <td width=234 valign=top style='width:175.45pt;border:solid windowtext 1.0pt;padding:0cm 5.4pt 0cm 5.4pt;height:18.3pt;'>
+                <p class=MsoNormal align=center style='text-align:center;padding-top:1.0pt;'>{{ tech }}</p>
+              </td>
+              {% if loop.index % 3 == 0 %}</tr><tr>{% endif %}
+            {% endfor %}
+            {% if tech_skills|length % 3 != 0 %}
+              {% for _ in range(3 - (tech_skills|length % 3)) %}
+                <td style="background:#5b7a99;"></td>
+              {% endfor %}
+            {% endif %}
+          </tr>
+        </table>
+
+       </td>
+       <td width=223 valign=top style='width:167.1pt;border:none;padding:0cm 5.4pt 0cm 5.4pt;height:27.35pt'>
+        <p class=MsoNormal><span style='font-family:"Cambria",serif;color:#366091'>&nbsp;</span></p>
+        <table class=5 border=1 cellspacing=0 cellpadding=0 width=223 style='border-collapse:collapse;border:none'>
+         <tr style='height:27.35pt'>
+          <td width=223 valign=top style='width:167.1pt;border:none;padding:0cm 5.4pt 0cm 5.4pt;height:27.35pt'>
+           
+           <!-- Education -->
+           <p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image018.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'> EDUCATION</span></b></p>
+           {% for edu in data.education %}
+             <p class=MsoNormal style='text-align:justify;'>
+               <b>{{ edu.degree or 'Degree' }}</b> in {{ edu.major or 'Major' }}<br>
+               <span>{{ edu.collegeName or 'Institution' }}</span><br>
+               <span>{{ edu.startDate or '' }} - {{ edu.endDate or '' }}</span>
+               {% if edu.cgpa %}<span> | CGPA: {{ edu.cgpa }}</span>{% endif %}
+             </p>
+           {% endfor %}
+   
+          </td>
+         </tr>
+        </table>
+      </td>
+      </tr>
+     </table>
+   </td>
+  </tr>
+ </table>
 
 <!-- Work Experience -->
-<p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'>WORK EXPERIENCE</span></b></p>
+<br>
+<p class=MsoNormal style='text-align:justify;'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image021.png"></span><span style='color:#366091'> 
+<p class=MsoNormal style='text-align:justify;'><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'>WORK EXPERIENCE</span></b></p>
+
+<!-- <p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'>WORK EXPERIENCE</span></b></p> -->
 {% for job in data.workExperience %}
   <p class=MsoNormal>
     <b>{{ job.title or 'Job Title' }}</b> at {{ job.company or 'Company' }}{% if job.location %}, {{ job.location }}{% endif %}<br>
     <span>{{ job.startDate or '' }} - {{ job.endDate or '' }}</span><br>
     <span>{{ job.description or 'Description of responsibilities and achievements.' }}</span>
+    <br>
   </p>
 {% endfor %}
 
 <!-- Projects -->
-<p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'>PROJECTS</span></b></p>
+<!-- <br>
+<br>
+
+<p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 18px'>PROJECTS</span></b></p>
+
 {% for project in data.projects %}
   <p class=MsoNormal>
     <b>{{ project.name or 'Project Name' }}</b> {% if project.technologies %}({{ project.technologies }}){% endif %}<br>
@@ -124,21 +176,27 @@
     {% if project.link %}<a href="{{ project.link }}">Project Link</a>{% endif %}
   </p>
 {% endfor %}
-
+<br>
+<br>
+-->
 <!-- Achievements -->
-<p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'>ACHIEVEMENTS</span></b></p>
-<ul>
+<!-- <p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 18px'>ACHIEVEMENTS</span></b></p>
+
+<ol>
 {% for achievement in data.achievements or [] %}
   <li>{{ achievement }}</li>
 {% endfor %}
-</ul>
+</ol>  -->
 
 <!-- Additional Information -->
-{% if data.otherInfo %}
-<p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'>ADDITIONAL INFORMATION</span></b></p>
+<!-- {% if data.otherInfo %} -->
+<!-- 
+<br>
+<br>
+<p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 18px'>ADDITIONAL INFORMATION</span></b></p>
 <p class=MsoNormal>{{ data.otherInfo }}</p>
 {% endif %}
 
 </div>
 </body>
-</html>
+</html> -->
