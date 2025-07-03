@@ -40,12 +40,17 @@
 <body bgcolor=white lang=EN-IN link=blue vlink=purple style='word-wrap:break-word'>
 <div class=WordSection1>
 
+{% set tech_skills = data.technicalSkills if data.technicalSkills else data.skills %}
+{% set profile_summary = data.profileSummary if data.profileSummary else generated_profile_summary %}
+{% set professional_title = data.title if data.title else generated_professional_title %}
+{% set soft_skills = data.softSkills if data.softSkills else generated_soft_skills %}
+
 <!-- Header Section -->
 <table class=6 border=1 cellspacing=0 cellpadding=0 width=732 style='border-collapse:collapse;border:none'>
  <tr>
   <td width=528 colspan=2 style='width:396.0pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
     <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size :20px;line-height:115%;font-family:"Arial",sans-serif;color:#1F497D'>{{ data.name or 'Full Name' }}</span></b></p>
-    <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size:16px;line-height:115%;font-family:"Cambria",serif;color:#154960'>{{ data.title or 'Professional Title' }}</span></b></p>
+    <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size:16px;line-height:115%;font-family:"Cambria",serif;color:#154960'>{{ professional_title }}</span></b></p>
     <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size:20px;line-height:115%;font-family:"Cambria",serif;color:#154960'>&nbsp;</span></b></p>
     <p class=MsoNormal style='text-align:justify;line-height:115%'><b><span style='font-size:13.0pt;line-height:115%;font-family:"Cambria",serif;color:#154960'>&nbsp;</span></b></p>
   </td>
@@ -66,7 +71,7 @@
 
 <!-- Profile Summary -->
 <p class=MsoNormal style='text-align:justify'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image003.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'> PROFILE SUMMARY</span></b></p>
-<p class=MsoNormal style='text-align:justify'><span style='font-size:10.0pt;font-family:"Cambria",serif;color:black'>{{ data.profileSummary or 'Profile summary goes here.' }}</span></p>
+<p class=MsoNormal style='text-align:justify;'><span style='font-size:10.0pt;font-family:"Cambria",serif;color:black'>{{ profile_summary }}</span></p>
 <br>
 <!-- Core Competencies / Skills -->
 <p class=MsoNormal style='text-align:justify;'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image004.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'> CORE COMPETENCIES</span></b></p>
@@ -86,7 +91,7 @@
 <!-- Soft Skills (if you want to keep the images, otherwise just list) -->
 <p class=MsoNormal><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image010.png"></span></b><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'> SOFT SKILLS</span></b></p>
 <ul>
-{% for soft in data.softSkills or [] %}
+{% for soft in soft_skills or [] %}
   <li>{{ soft }}</li>
 {% endfor %}
 </ul>
@@ -101,9 +106,8 @@
         <td width=528 colspan=2 style='width:396.0pt;border:none;padding:0cm 5.4pt 0cm 5.4pt'>
 
         <!-- Technical Skills Table (optional, or use above skills) -->
-        <p class=MsoNormal style='text-align:justify;'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image010.png"></span><span style='color:#366091'> 
+        <p class=MsoNormal style='text-align:justify;'><b><span style='font-family:"Cambria",serif;color:#154960'><img width=24 height=24 src="file:///{{ abs_img_path }}/image010.png"></span><span style='color:#366091'> </span>
         </b><b><span style='font-family:"Cambria",serif;color:#154960;font-size: 20px'>TECHNICAL SKILLS</span></b></p>
-        {% set tech_skills = data.technicalSkills if data.technicalSkills else data.skills %}
         <table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 width=702 style='border-collapse:collapse;border:none'>
           <tr style='height:18.3pt'>
             {% for tech in tech_skills or [] %}

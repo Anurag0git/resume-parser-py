@@ -57,6 +57,101 @@ def clean_response_for_json(raw):
     
     return raw
 
+def infer_professional_title(data):
+    # Use most recent work experience with both title and company if available
+    if data.get("workExperience"):
+        for job in data["workExperience"]:
+            if job.get("title") and job.get("company"):
+                return f"{job['title']} at {job['company']}"
+        # Fallback: just title
+        for job in data["workExperience"]:
+            if job.get("title"):
+                return job["title"]
+    # Use most recent education if no work experience
+    if data.get("education"):
+        edu = data["education"][0]
+        if edu.get("degree") and edu.get("major"):
+            return f"Recent {edu['degree']} in {edu['major']} Graduate"
+        elif edu.get("degree"):
+            return f"Recent {edu['degree']} Graduate"
+    # Use top skills
+    if data.get("skills"):
+        return f"Specialist in {', '.join([s for s in data['skills'][:2] if s])}"
+    return "Professional Title"
+
+def infer_profile_summary(data):
+    title = data.get("title") or infer_professional_title(data)
+    skills = data.get("skills", [])
+    skills_str = ", ".join([s for s in skills[:4] if s]) if skills else ""
+    years = ""
+    # Try to infer years of experience from all work experiences
+    if data.get("workExperience"):
+        from datetime import datetime
+        years_list = []
+        for job in data["workExperience"]:
+            start = job.get("startDate", "")
+            end = job.get("endDate", "") or str(datetime.now().year)
+            try:
+                start_year = int(''.join(filter(str.isdigit, start))[:4])
+                end_year = int(''.join(filter(str.isdigit, end))[:4])
+                years_list.append(end_year - start_year)
+            except Exception:
+                continue
+        if years_list:
+            total_years = sum([y for y in years_list if y > 0])
+            if total_years > 0:
+                years = f" with {total_years} years of experience"
+    elif data.get("education"):
+        edu = data["education"][0]
+        if edu.get("degree"):
+            years = f", {edu['degree']} graduate"
+    # Try to infer industry/technologies from work/project descriptions
+    techs = set()
+    for job in data.get("workExperience", []):
+        desc = (job.get("description") or "").lower()
+        for skill in skills:
+            if skill and skill.lower() in desc:
+                techs.add(skill)
+    for proj in data.get("projects", []):
+        desc = (proj.get("description") or "").lower()
+        for skill in skills:
+            if skill and skill.lower() in desc:
+                techs.add(skill)
+    techs_str = ", ".join([t for t in list(techs)[:3] if t])
+    summary = f"I am {title}{years}"
+    if techs_str:
+        summary += f" with hands-on experience in {techs_str}"
+    elif skills_str:
+        summary += f" with expertise in {skills_str}"
+    summary += "."
+    return summary
+
+def infer_soft_skills(data):
+    soft_skills = set()
+    # Combine all text sources
+    achievements = " ".join([a for a in data.get("achievements", []) if a])
+    projects = " ".join([p.get("description", "") or "" for p in data.get("projects", [])])
+    work = " ".join([(w.get("description", "") or "") for w in data.get("workExperience", [])])
+    job_titles = " ".join([(w.get("title", "") or "") for w in data.get("workExperience", [])])
+    edu_text = " ".join([(e.get("degree", "") or "") + " " + (e.get("major", "") or "") for e in data.get("education", [])])
+    text = f"{achievements} {projects} {work} {job_titles} {edu_text}".lower()
+    # Keyword-based inference
+    if any(word in text for word in ["lead", "led", "team", "collaborate", "mentored", "managed"]):
+        soft_skills.add("Leadership")
+        soft_skills.add("Collaboration")
+    if any(word in text for word in ["presented", "communicated", "reported", "wrote", "documented"]):
+        soft_skills.add("Presentation")
+        soft_skills.add("Communication")
+    if any(word in text for word in ["deadline", "fast-paced", "timely", "delivered", "prioritize", "organized"]):
+        soft_skills.add("Time Management")
+        soft_skills.add("Adaptability")
+    if any(word in text for word in ["analyze", "solved", "troubleshoot", "problem", "critical thinking"]):
+        soft_skills.add("Problem Solving")
+        soft_skills.add("Analytical Thinking")
+    if not soft_skills:
+        soft_skills = {"Teamwork", "Communication", "Problem Solving"}
+    return sorted([s for s in soft_skills if s])
+
 def process_single_resume(filepath):
     """Process a single resume and return the formatted PDF"""
     try:
@@ -72,6 +167,7 @@ def process_single_resume(filepath):
         {{
             "name": "Full Name",
             "email": "Email Address",
+            "phone": "Phone Number",
             "linkedin": "LinkedIn Profile URL",
             "github": "GitHub Profile URL",
             "education": [{{"degree": "", "major": "", "collegeName": "", "cgpa": "", "startDate": "", "endDate": ""}}],
@@ -104,10 +200,34 @@ def process_single_resume(filepath):
         except json.JSONDecodeError as e:
             return None, f"JSON parsing error: {e.msg} at line {e.lineno}, column {e.colno}"
 
+        # --- Fallback logic for missing fields ---
+        # Professional Title
+        if not structured_data.get("title"):
+            structured_data["title"] = infer_professional_title(structured_data)
+        generated_professional_title = structured_data["title"]
+
+        # Profile Summary
+        if not structured_data.get("profileSummary"):
+            structured_data["profileSummary"] = infer_profile_summary(structured_data)
+        generated_profile_summary = structured_data["profileSummary"]
+
+        # Soft Skills
+        if not structured_data.get("softSkills"):
+            generated_soft_skills = infer_soft_skills(structured_data)
+        else:
+            generated_soft_skills = structured_data["softSkills"]
+
         # Generate PDF
         abs_img_path = os.path.abspath(os.path.join('templates', 'CV_Sample_files')).replace('\\', '/')
         print("ABS IMG PATH:", abs_img_path)
-        rendered_html = render_template("resume_template.html", data=structured_data, abs_img_path=abs_img_path)
+        rendered_html = render_template(
+            "resume_template.html",
+            data=structured_data,
+            abs_img_path=abs_img_path,
+            generated_profile_summary=generated_profile_summary,
+            generated_professional_title=generated_professional_title,
+            generated_soft_skills=generated_soft_skills
+        )
         pdf_bytes = pdfkit.from_string(
             rendered_html, 
             False, 
