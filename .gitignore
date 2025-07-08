@@ -1,23 +1,23 @@
 # Byte-compiled / cache
-__pycache__/
-*.py[cod]
-*.log
+# __pycache__/
+# *.py[cod]
+# *.log
 
 # VS Code / JetBrains
-.vscode/
-.idea/
+# .vscode/
+# .idea/
 
 # Virtualenv
-env/
-venv/
+# env/
+# venv/
 
 # OS files
-.DS_Store
-Thumbs.db
+# .DS_Store
+# Thumbs.db
 
 # PDF, DOCX generated
-*.pdf
-*.docx
+# *.pdf
+# *.docx
 
 # Resume uploads
 uploads/
