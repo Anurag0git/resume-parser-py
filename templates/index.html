@@ -178,6 +178,45 @@
             <input type="file" name="resume" required accept=".pdf" id="fileInput" style="display: none;" multiple/>
           </div>
           
+          <!-- Custom Template Upload Section -->
+          <div class="mt-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="customTemplate" name="custom_template">
+              <label class="form-check-label" for="customTemplate">
+                <i class="fas fa-palette me-2"></i>Use Custom Template
+              </label>
+            </div>
+                          <small class="text-muted">Upload your own HTML or DOCX template for personalized formatting</small>
+            
+            <div id="templateUploadSection" style="display: none; margin-top: 1rem;">
+              <div class="file-input-wrapper">
+                <label for="templateInput" class="custom-file-input" id="customTemplateInput">
+                  <i class="fas fa-file-code me-2"></i>
+                  <span id="templateLabel">Choose template file</span>
+                </label>
+                <input type="file" name="template" accept=".html,.htm,.docx" id="templateInput" style="display: none;"/>
+              </div>
+              <small class="text-muted d-block mt-2">
+                <i class="fas fa-info-circle me-1"></i>
+                Templates must use <strong>Jinja2 variables and loops</strong> for lists and sections.<br>
+                <strong>For DOCX templates:</strong> Use the Jinja2 syntax inside Microsoft Word.<br>
+                <span class="d-block mt-1">Example for skills list:</span>
+                <code>{% raw %}{% for skill in data.skills %} • {{ skill }} {% endfor %}{% endraw %}</code><br>
+                <span class="d-block mt-1">Example for work experience:</span>
+                <code>{% raw %}{% for job in data.workExperience %} {{ job.title }} at {{ job.company }} {% endfor %}{% endraw %}</code><br>
+                <span class="d-block mt-1">Download sample template:</span>
+                <!-- <a href="/download-sample-template" class="text-primary text-decoration-none">
+                  <i class="fas fa-download me-1"></i>Download Sample HTML Template
+                </a> -->
+                <br>
+                <a href="/static/corrected_docx_template.docx" class="text-primary text-decoration-none">
+                  <i class="fas fa-download me-1"></i>Download Sample DOCX Template
+                </a>
+                <br>
+                </small>
+            </div>
+          </div>
+          
           <div class="mt-3">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="batchMode" name="batch_mode">
@@ -217,6 +256,11 @@
     const customFileInput = document.getElementById('customFileInput');
     const batchMode = document.getElementById('batchMode');
     const progressInfo = document.getElementById('progressInfo');
+    const customTemplateCheckbox = document.getElementById('customTemplate');
+    const templateUploadSection = document.getElementById('templateUploadSection');
+    const templateInput = document.getElementById('templateInput');
+    const templateLabel = document.getElementById('templateLabel');
+
 
     console.log('Script loaded. File input:', fileInput);
 
@@ -258,6 +302,33 @@
           fileInput.files = dt.files;
           fileLabel.textContent = fileInput.files[0].name;
         }
+      }
+    });
+
+    // Custom Template checkbox handler
+    customTemplateCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        templateUploadSection.style.display = 'block';
+        templateInput.required = true;
+        templateLabel.textContent = 'Choose template file (HTML or DOCX)';
+        templateLabel.style.color = '#64748b';
+      } else {
+        templateUploadSection.style.display = 'none';
+        templateInput.required = false;
+        templateInput.value = ''; // Clear selected file
+        templateLabel.textContent = 'Choose template file (HTML or DOCX)';
+        templateLabel.style.color = '#64748b';
+      }
+    });
+
+    // Template input change handler
+    templateInput.addEventListener('change', function(e) {
+      if (e.target.files.length > 0) {
+        templateLabel.textContent = e.target.files[0].name;
+        templateLabel.style.color = '#2563eb';
+      } else {
+        templateLabel.textContent = 'Choose template file (HTML or DOCX)';
+        templateLabel.style.color = '#64748b';
       }
     });
 
@@ -366,6 +437,10 @@
         uploadForm.reset();
         fileLabel.textContent = 'Choose PDF file(s) or drag and drop here';
         fileLabel.style.color = '#64748b';
+        templateLabel.textContent = 'Choose template file (HTML or DOCX)';
+        templateLabel.style.color = '#64748b';
+        customTemplateCheckbox.checked = false;
+        templateUploadSection.style.display = 'none';
         progressInfo.innerHTML = '';
 
       } catch (err) {
@@ -384,6 +459,10 @@
     console.log('- Submit button:', submitBtn);
     console.log('- Upload form:', uploadForm);
     console.log('- Batch mode:', batchMode);
+    console.log('- Custom Template Checkbox:', customTemplateCheckbox);
+    console.log('- Template Upload Section:', templateUploadSection);
+    console.log('- Template Input:', templateInput);
+    console.log('- Template Label:', templateLabel);
   </script>
 </body>
 </html>

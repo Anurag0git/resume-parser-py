@@ -10,6 +10,11 @@ import zipfile
 from datetime import datetime
 from dotenv import load_dotenv
 import platform
+from jinja2 import Template
+from docxtpl import DocxTemplate
+from docx2pdf import convert
+import tempfile
+import pythoncom
 
 
 app = Flask(__name__)
@@ -35,6 +40,102 @@ def extract_text_from_pdf(filepath):
         text += page.get_text()  # type: ignore
     doc.close()
     return text.strip()
+
+def process_custom_template(template_file):
+    """Process uploaded custom template and return template object"""
+    try:
+        # Read the template content
+        template_content = template_file.read().decode('utf-8')
+        template_file.seek(0)  # Reset file pointer for potential reuse
+        
+        # Create Jinja2 template object
+        template = Template(template_content)
+        
+        # Basic validation - check if template has basic resume variables
+        test_data = {
+            "name": "Test Name",
+            "email": "test@example.com",
+            "phone": "123-456-7890",
+            "linkedin": "https://linkedin.com/in/test",
+            "github": "https://github.com/test",
+            "workExperience": [],
+            "education": [],
+            "skills": [],
+            "projects": [],
+            "achievements": [],
+            "otherInfo": ""
+        }
+        
+        # Try to render with test data to catch basic syntax errors
+        try:
+            template.render(
+                data=test_data,
+                abs_img_path="/test/path",
+                generated_profile_summary="Test profile summary",
+                generated_professional_title="Test Professional Title",
+                generated_soft_skills=["Test Skill 1", "Test Skill 2"]
+            )
+        except Exception as e:
+            return None, f"Template validation failed: {str(e)}"
+        
+        return template, None
+        
+    except Exception as e:
+        return None, f"Error processing template: {str(e)}"
+
+def process_docx_template(template_file):
+    """Process uploaded DOCX template and return template object"""
+    try:
+        # Save the uploaded file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_file:
+            template_file.save(temp_file.name)
+            temp_path = temp_file.name
+        
+        # Create DocxTemplate object
+        doc = DocxTemplate(temp_path)
+        
+        # Basic validation - check if template has basic resume variables
+        test_data = {
+            "name": "Test Name",
+            "email": "test@example.com",
+            "phone": "123-456-7890",
+            "linkedin": "https://linkedin.com/in/test",
+            "github": "https://github.com/test",
+            "workExperience": [],
+            "education": [],
+            "skills": [],
+            "projects": [],
+            "achievements": [],
+            "otherInfo": ""
+        }
+        
+        # Try to render with test data to catch basic syntax errors
+        try:
+            test_context = {
+                "data": test_data,
+                "generated_profile_summary": "Test profile summary",
+                "generated_professional_title": "Test Professional Title",
+                "generated_soft_skills": ["Test Skill 1", "Test Skill 2"]
+            }
+            doc.render(test_context)
+        except Exception as e:
+            # Clean up temp file
+            try:
+                os.unlink(temp_path)
+            except:
+                pass
+            return None, f"DOCX template validation failed: {str(e)}"
+        
+        return doc, temp_path
+        
+    except Exception as e:
+        # Clean up temp file if it exists
+        try:
+            if 'temp_path' in locals():
+                os.unlink(temp_path)
+        except:
+            pass
+        return None, f"Error processing DOCX template: {str(e)}"
 
 def clean_response_for_json(raw):
     raw = raw.replace("```json", "").replace("```", "").strip()
@@ -86,7 +187,6 @@ def infer_profile_summary(data):
     years = ""
     # Try to infer years of experience from all work experiences
     if data.get("workExperience"):
-        from datetime import datetime
         years_list = []
         for job in data["workExperience"]:
             start = job.get("startDate", "")
@@ -152,7 +252,7 @@ def infer_soft_skills(data):
         soft_skills = {"Teamwork", "Communication", "Problem Solving"}
     return sorted([s for s in soft_skills if s])
 
-def process_single_resume(filepath):
+def process_single_resume(filepath, custom_template=None, template_type="html"):
     """Process a single resume and return the formatted PDF"""
     try:
         # Extract text from PDF
@@ -217,32 +317,105 @@ def process_single_resume(filepath):
         else:
             generated_soft_skills = structured_data["softSkills"]
 
-        # Generate PDF
-        abs_img_path = os.path.abspath(os.path.join('templates', 'CV_Sample_files')).replace('\\', '/')
-        print("ABS IMG PATH:", abs_img_path)
-        rendered_html = render_template(
-            "resume_template.html",
-            data=structured_data,
-            abs_img_path=abs_img_path,
-            generated_profile_summary=generated_profile_summary,
-            generated_professional_title=generated_professional_title,
-            generated_soft_skills=generated_soft_skills
-        )
-        options = {
-            'enable-local-file-access': '',
-            'encoding': 'UTF-8',
-            'disable-smart-shrinking': '',
-            'zoom': '1.0',
-            'minimum-font-size': '12'
-        }
-        pdf_bytes = pdfkit.from_string(
-            rendered_html, 
-            False, 
-            configuration=PDFKIT_CONFIG, 
-            options=options
-        )
-        
-        return pdf_bytes, None
+        # Generate output based on template type
+        if custom_template:
+            if template_type == "docx":
+                # Use DOCX template
+                try:
+                    # Render the DOCX template
+                    context = {
+                        "data": structured_data,
+                        "generated_profile_summary": generated_profile_summary,
+                        "generated_professional_title": generated_professional_title,
+                        "generated_soft_skills": generated_soft_skills
+                    }
+                    custom_template.render(context)
+                    
+                    # Save the rendered DOCX to a temporary file
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_docx:
+                        custom_template.save(temp_docx.name)
+                        docx_path = temp_docx.name
+                    
+                    # Convert DOCX to PDF
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_pdf:
+                        pdf_path = temp_pdf.name
+                    
+                    pythoncom.CoInitialize()
+                    convert(docx_path, pdf_path)
+                    pythoncom.CoUninitialize()
+                    
+                    # Read the PDF bytes
+                    with open(pdf_path, 'rb') as f:
+                        pdf_bytes = f.read()
+                    
+                    # Clean up temporary files
+                    try:
+                        os.unlink(docx_path)
+                        os.unlink(pdf_path)
+                    except:
+                        pass
+                    
+                    return pdf_bytes, None
+                    
+                except Exception as e:
+                    return None, f"Error rendering DOCX template: {str(e)}"
+            else:
+                # Use HTML template
+                try:
+                    abs_img_path = os.path.abspath(os.path.join('templates', 'CV_Sample_files')).replace('\\', '/')
+                    rendered_html = custom_template.render(
+                        data=structured_data,
+                        abs_img_path=abs_img_path,
+                        generated_profile_summary=generated_profile_summary,
+                        generated_professional_title=generated_professional_title,
+                        generated_soft_skills=generated_soft_skills
+                    )
+                    
+                    options = {
+                        'enable-local-file-access': '',
+                        'encoding': 'UTF-8',
+                        'disable-smart-shrinking': '',
+                        'zoom': '1.0',
+                        'minimum-font-size': '12'
+                    }
+                    pdf_bytes = pdfkit.from_string(
+                        rendered_html, 
+                        False, 
+                        configuration=PDFKIT_CONFIG, 
+                        options=options
+                    )
+                    
+                    return pdf_bytes, None
+                    
+                except Exception as e:
+                    return None, f"Error rendering HTML template: {str(e)}"
+        else:
+            # Use default HTML template
+            abs_img_path = os.path.abspath(os.path.join('templates', 'CV_Sample_files')).replace('\\', '/')
+            rendered_html = render_template(
+                "resume_template.html",
+                data=structured_data,
+                abs_img_path=abs_img_path,
+                generated_profile_summary=generated_profile_summary,
+                generated_professional_title=generated_professional_title,
+                generated_soft_skills=generated_soft_skills
+            )
+            
+            options = {
+                'enable-local-file-access': '',
+                'encoding': 'UTF-8',
+                'disable-smart-shrinking': '',
+                'zoom': '1.0',
+                'minimum-font-size': '12'
+            }
+            pdf_bytes = pdfkit.from_string(
+                rendered_html, 
+                False, 
+                configuration=PDFKIT_CONFIG, 
+                options=options
+            )
+            
+            return pdf_bytes, None
         
     except Exception as e:
         return None, f"Error processing resume: {str(e)}"
@@ -259,6 +432,7 @@ def index():
             
             files = request.files.getlist('resume')
             batch_mode = request.form.get('batch_mode') == 'on'
+            custom_template_mode = request.form.get('custom_template') == 'on'
             
             if not files or all(file.filename == '' for file in files):
                 print("No files selected")
@@ -268,6 +442,38 @@ def index():
             pdf_files = [file for file in files if file.filename and file.filename.lower().endswith('.pdf')]
             if not pdf_files:
                 return render_template('index.html', error="Please upload valid PDF files.")
+            
+            # Process custom template if provided
+            custom_template = None
+            template_type = "html"
+            template_temp_path = None
+            
+            if custom_template_mode:
+                if 'template' not in request.files:
+                    return render_template('index.html', error="Custom template mode enabled but no template file uploaded.")
+                
+                template_file = request.files['template']
+                if not template_file.filename:
+                    return render_template('index.html', error="No template file selected.")
+                
+                # Check file extension
+                file_extension = template_file.filename.lower()
+                if file_extension.endswith(('.html', '.htm')):
+                    custom_template, template_error = process_custom_template(template_file)
+                    template_type = "html"
+                elif file_extension.endswith('.docx'):
+                    custom_template, template_temp_path = process_docx_template(template_file)
+                    template_type = "docx"
+                    if template_temp_path is None:
+                        template_error = custom_template  # In this case, custom_template contains the error
+                        custom_template = None
+                    else:
+                        template_error = None
+                else:
+                    return render_template('index.html', error="Please upload a valid HTML (.html/.htm) or DOCX (.docx) template file.")
+                
+                if template_error:
+                    return render_template('index.html', error=template_error)
             
             print(f"Processing {len(pdf_files)} PDF files")
             
@@ -279,7 +485,7 @@ def index():
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
                 file.save(filepath)
                 
-                pdf_bytes, error = process_single_resume(filepath)
+                pdf_bytes, error = process_single_resume(filepath, custom_template, template_type)
                 if error:
                     return render_template('index.html', error=error)
                 
@@ -302,8 +508,8 @@ def index():
                         filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
                         file.save(filepath)
                         
-                        # Process the resume
-                        pdf_bytes, error = process_single_resume(filepath)
+                        # Process the resume with custom template if provided
+                        pdf_bytes, error = process_single_resume(filepath, custom_template, template_type)
                         
                         if pdf_bytes:
                             # Add to zip with a clean filename
@@ -333,9 +539,34 @@ def index():
         except Exception as e:
             print(f"Unexpected error: {str(e)}")
             return render_template("index.html", error=f"Unexpected error: {str(e)}")
+        finally:
+            # Clean up DOCX template temporary file if it exists
+            if template_temp_path and os.path.exists(template_temp_path):
+                try:
+                    os.unlink(template_temp_path)
+                except:
+                    pass
 
     print("GET request received")
     return render_template("index.html")
+
+@app.route('/download-sample-template')
+def download_sample_template():
+    """Download the sample HTML template"""
+    try:
+        template_path = os.path.join('templates', 'sample_custom_template.html')
+        return send_file(template_path, download_name="sample_custom_template.html", as_attachment=True)
+    except Exception as e:
+        return render_template('index.html', error=f"Error downloading template: {str(e)}")
+
+@app.route('/download-sample-docx-template')
+def download_sample_docx_template():
+    """Download the sample DOCX template"""
+    try:
+        template_path = os.path.join('templates', 'sample_docx_template.docx')
+        return send_file(template_path, download_name="sample_docx_template.docx", as_attachment=True)
+    except Exception as e:
+        return render_template('index.html', error=f"Error downloading template: {str(e)}")
 
 if __name__ == '__main__':
     app.run(debug=True)

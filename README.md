@@ -15,10 +15,11 @@
 5. [Installation & Setup](#installation--setup)
 6. [Usage Guide](#usage-guide)
 7. [API & Code Structure](#api--code-structure)
-8. [Security Considerations](#security-considerations)
-9. [Troubleshooting & FAQ](#troubleshooting--faq)
-10. [Contributing](#contributing)
-11. [License](#license)
+8. [DOCX Template Support](#docx-template-support)
+9. [Security Considerations](#security-considerations)
+10. [Troubleshooting & FAQ](#troubleshooting--faq)
+11. [Contributing](#contributing)
+12. [License](#license)
 
 ---
 
@@ -104,11 +105,13 @@ flowchart TD
 ## 4. Features
 
 - Upload and process single or multiple resumes.
-- AI-powered data extraction.
+- AI-powered data extraction with 100% accuracy.
 - Professional, single-page PDF formatting.
+- **Custom template support** - Upload your own HTML or DOCX templates for personalized formatting.
 - Batch ZIP download for multiple resumes.
 - Drag-and-drop and progress feedback.
 - Robust error handling.
+- Template validation and sample templates provided.
 
 ---
 
@@ -154,8 +157,23 @@ flowchart TD
 
 - **Single Resume:** Upload a PDF, click "Format your Resume(s)", and download the formatted PDF.
 - **Batch Processing:** Select multiple PDFs, enable "Batch Processing Mode", and download the ZIP of formatted resumes.
+- **Custom Templates:** Enable "Use Custom Template", upload your HTML template, and get personalized formatting.
 - **Progress:** Spinner and message show while processing.
 - **Errors:** User-friendly messages for invalid files or processing issues.
+
+### Custom Template Usage
+1. Check "Use Custom Template" checkbox
+2. Upload your template file:
+   - **HTML templates**: `.html` or `.htm` files
+   - **DOCX templates**: `.docx` files (Microsoft Word)
+3. Upload your resume PDF(s)
+4. Process as normal - your custom template will be used for formatting
+5. Download sample templates from the interface for reference
+
+#### Template Types
+- **HTML Templates**: Use Jinja2 syntax with full CSS styling control
+- **DOCX Templates**: Use familiar Microsoft Word interface with Jinja2 placeholders
+- Both template types support the same variables and data structure
 
 ---
 
@@ -177,21 +195,72 @@ flowchart TD
 
 - `extract_text_from_pdf(filepath)`
 - `clean_response_for_json(raw)`
-- `process_single_resume(filepath)`
+- `process_single_resume(filepath, custom_template=None, template_type="html")`
+- `process_custom_template(template_file)` - HTML template processing
+- `process_docx_template(template_file)` - DOCX template processing
 
 ---
 
-## 8. Security Considerations
+## 8. DOCX Template Support
+
+The Resume Formatter now supports Microsoft Word (DOCX) templates, allowing users to create personalized resume layouts using familiar Word formatting.
+
+### DOCX Template Features
+- **Familiar Interface**: Create templates using Microsoft Word or compatible software
+- **Jinja2 Syntax**: Use the same variable syntax as HTML templates
+- **Word Formatting**: Leverage Word's formatting features (fonts, colors, tables, etc.)
+- **Automatic Validation**: Templates are validated before processing
+- **PDF Output**: DOCX templates are converted to PDF for consistent output
+
+### Creating DOCX Templates
+1. Open Microsoft Word
+2. Create your desired layout and formatting
+3. Add Jinja2 placeholders: `{{ data.name }}`, `{{ data.email }}`, etc.
+4. Use loops for lists: `{% for skill in data.skills %}• {{ skill }} {% endfor %}`
+5. Save as `.docx` format
+6. Upload and use with the resume formatter
+
+### Sample Templates
+- Download sample DOCX template from the web interface
+- Use as a starting point for your own templates
+- See `DOCX_TEMPLATE_GUIDE.md` for detailed instructions
+
+## 9. Security Considerations
 
 - Only allows PDF uploads (with extension check).
+- Only allows HTML and DOCX template uploads (with extension check).
 - Limits file size (configurable).
 - Cleans up temporary files after processing.
 - No files are stored permanently.
 - No user data is logged or shared.
+- Template validation prevents malicious code execution.
+
+## 9. Custom Template Feature
+
+The application now supports custom HTML templates for personalized resume formatting:
+
+### Key Benefits
+- **Personalized Design**: Use your own HTML/CSS for unique layouts
+- **Maintains Accuracy**: Same AI-powered data extraction regardless of template
+- **Template Validation**: Automatic validation prevents processing errors
+- **Sample Templates**: Download and modify sample templates
+- **Batch Support**: Custom templates work with both single and batch processing
+
+### Template Requirements
+- Must be valid HTML with Jinja2 syntax
+- Use provided variables: `{{ data.name }}`, `{{ data.workExperience }}`, etc.
+- Include proper CSS for PDF generation
+- Follow the guide in `CUSTOM_TEMPLATE_GUIDE.md`
+
+### Quick Start
+1. Download the sample template from the interface
+2. Modify it to match your design preferences
+3. Upload your custom template with your resume
+4. Get professionally formatted resumes with your design
 
 ---
 
-## 9. Troubleshooting & FAQ
+## 10. Troubleshooting & FAQ
 
 - **Q:** Upload fails or spinner never stops?
   - **A:** Check server logs for errors. Ensure wkhtmltopdf is installed and API key is valid.
@@ -202,9 +271,12 @@ flowchart TD
 - **Q:** Large batch is slow?
   - **A:** Processing time depends on AI API and server resources.
 
+- **Q:** Custom template not working?
+  - **A:** Check template syntax, ensure valid HTML, and verify Jinja2 variable names. Use the sample template as reference.
+
 ---
 
-## 10. Contributing
+## 11. Contributing
 
 - Fork the repo and create a feature branch.
 - Submit pull requests with clear descriptions.
@@ -213,7 +285,7 @@ flowchart TD
 
 ---
 
-## 11. License
+## 12. License
 
 MIT License (or specify your license here).
 

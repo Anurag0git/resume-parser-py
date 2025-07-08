@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ data.name or 'Full Name' }} - Resume</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .resume { max-width: 800px; margin: 0 auto; padding: 20px; background: white; }
+        .header { text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 20px; margin-bottom: 25px; }
+        .name { font-size: 28px; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+        .title { font-size: 18px; color: #7f8c8d; margin-bottom: 15px; }
+        .contact { font-size: 12px; color: #555; }
+        .contact a { color: #3498db; text-decoration: none; }
+        .contact a:hover { text-decoration: underline; }
+        .section { margin-bottom: 20px; }
+        .section-title { font-size: 16px; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 5px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .item { margin-bottom: 15px; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+        .item-title { font-weight: bold; color: #2c3e50; font-size: 14px; }
+        .item-company { color: #34495e; font-size: 13px; }
+        .item-date { color: #7f8c8d; font-size: 12px; white-space: nowrap; }
+        .item-description { color: #555; font-size: 12px; line-height: 1.4; }
+        .skills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .skill { background: #ecf0f1; color: #2c3e50; padding: 4px 10px; border-radius: 15px; font-size: 11px; }
+        .achievements { list-style: none; }
+        .achievements li { position: relative; margin-bottom: 5px; padding-left: 15px; color: #555; font-size: 12px; }
+        .achievements li::before { content: "•"; color: #3498db; position: absolute; left: 0; font-weight: bold; }
+        .education-item { margin-bottom: 10px; }
+        .project-item { margin-bottom: 10px; }
+        .project-tech { color: #7f8c8d; font-size: 11px; font-style: italic; }
+        .profile-summary { background: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin-bottom: 20px; }
+        @media print {
+            body { font-size: 10px; }
+            .resume { padding: 15px; }
+            .name { font-size: 24px; }
+            .section-title { font-size: 14px; }
+        }
+        @page { margin: 0.5in; }
+    </style>
+</head>
+<body>
+    <div class="resume">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="name">{{ data.name or 'Full Name' }}</div>
+            <div class="title">{{ generated_professional_title or 'Professional Title' }}</div>
+            <div class="contact">
+                {% if data.email %}<a href="mailto:{{ data.email }}">{{ data.email }}</a>{% endif %}
+                {% if data.phone %} | {{ data.phone }}{% endif %}
+                {% if data.linkedin %} | <a href="{{ data.linkedin }}">LinkedIn</a>{% endif %}
+                {% if data.github %} | <a href="{{ data.github }}">GitHub</a>{% endif %}
+            </div>
+        </div>
+
+        <!-- Profile Summary -->
+        {% if generated_profile_summary %}
+        <div class="section">
+            <div class="section-title">Profile Summary</div>
+            <div class="profile-summary">
+                {{ generated_profile_summary }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Skills -->
+        {% if data.skills %}
+        <div class="section">
+            <div class="section-title">Technical Skills</div>
+            <div class="skills">
+                {% for skill in data.skills %}
+                    <span class="skill">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Soft Skills -->
+        {% if generated_soft_skills %}
+        <div class="section">
+            <div class="section-title">Soft Skills</div>
+            <div class="skills">
+                {% for skill in generated_soft_skills %}
+                    <span class="skill">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Work Experience -->
+        {% if data.workExperience %}
+        <div class="section">
+            <div class="section-title">Work Experience</div>
+            {% for job in data.workExperience %}
+            <div class="item">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">{{ job.title or 'Job Title' }}</div>
+                        <div class="item-company">{{ job.company or 'Company' }}{% if job.location %}, {{ job.location }}{% endif %}</div>
+                    </div>
+                    <div class="item-date">
+                        {{ job.startDate or '' }}{% if job.startDate and job.endDate %} - {% endif %}{{ job.endDate or '' }}
+                    </div>
+                </div>
+                {% if job.description %}
+                <div class="item-description">{{ job.description }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Education -->
+        {% if data.education %}
+        <div class="section">
+            <div class="section-title">Education</div>
+            {% for edu in data.education %}
+            <div class="education-item">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">{{ edu.degree or 'Degree' }} in {{ edu.major or 'Major' }}</div>
+                        <div class="item-company">{{ edu.collegeName or 'Institution' }}</div>
+                    </div>
+                    <div class="item-date">
+                        {{ edu.startDate or '' }}{% if edu.startDate and edu.endDate %} - {% endif %}{{ edu.endDate or '' }}
+                        {% if edu.cgpa %} | CGPA: {{ edu.cgpa }}{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Projects -->
+        {% if data.projects %}
+        <div class="section">
+            <div class="section-title">Projects</div>
+            {% for project in data.projects %}
+            <div class="project-item">
+                <div class="item-header">
+                    <div class="item-title">{{ project.name or 'Project Name' }}</div>
+                    {% if project.link %}<a href="{{ project.link }}">View Project</a>{% endif %}
+                </div>
+                {% if project.technologies %}
+                <div class="project-tech">Technologies: {{ project.technologies }}</div>
+                {% endif %}
+                {% if project.description %}
+                <div class="item-description">{{ project.description }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Achievements -->
+        {% if data.achievements %}
+        <div class="section">
+            <div class="section-title">Achievements</div>
+            <ul class="achievements">
+                {% for achievement in data.achievements %}
+                <li>{{ achievement }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Additional Information -->
+        {% if data.otherInfo %}
+        <div class="section">
+            <div class="section-title">Additional Information</div>
+            <div class="item-description">{{ data.otherInfo }}</div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html> 
