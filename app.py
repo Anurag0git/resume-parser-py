@@ -1,5 +1,5 @@
 import os
-import fitz  # PyMuPDF
+import fitz  
 import requests
 from flask import Flask, render_template, request, send_file
 import pdfkit
