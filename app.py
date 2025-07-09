@@ -12,9 +12,7 @@ from dotenv import load_dotenv
 import platform
 from jinja2 import Template
 from docxtpl import DocxTemplate
-from docx2pdf import convert
 import tempfile
-import pythoncom
 
 
 app = Flask(__name__)
@@ -336,26 +334,17 @@ def process_single_resume(filepath, custom_template=None, template_type="html"):
                         custom_template.save(temp_docx.name)
                         docx_path = temp_docx.name
                     
-                    # Convert DOCX to PDF
-                    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_pdf:
-                        pdf_path = temp_pdf.name
+                    # Read the DOCX bytes
+                    with open(docx_path, 'rb') as f:
+                        docx_bytes = f.read()
                     
-                    pythoncom.CoInitialize()
-                    convert(docx_path, pdf_path)
-                    pythoncom.CoUninitialize()
-                    
-                    # Read the PDF bytes
-                    with open(pdf_path, 'rb') as f:
-                        pdf_bytes = f.read()
-                    
-                    # Clean up temporary files
+                    # Clean up temporary file
                     try:
                         os.unlink(docx_path)
-                        os.unlink(pdf_path)
                     except:
                         pass
                     
-                    return pdf_bytes, None
+                    return docx_bytes, 'docx'
                     
                 except Exception as e:
                     return None, f"Error rendering DOCX template: {str(e)}"
@@ -489,7 +478,10 @@ def index():
                 if error:
                     return render_template('index.html', error=error)
                 
-                return send_file(BytesIO(pdf_bytes), download_name="Formatted_Resume.pdf", as_attachment=False)  # type: ignore
+                if isinstance(pdf_bytes, tuple) and pdf_bytes[1] == 'docx':
+                    return send_file(BytesIO(pdf_bytes[0]), download_name="Formatted_Resume.docx", as_attachment=True)
+                else:
+                    return send_file(BytesIO(pdf_bytes), download_name="Formatted_Resume.pdf", as_attachment=False)  # type: ignore
             
             # Batch processing
             else:
